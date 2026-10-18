@@ -1,0 +1,12 @@
+[
+  {
+    "component": "jquery",
+    "version": "3.3.1",
+    "justification": "Bewuste zwakke lib van de starter (CVE-2019-11358, CVE-2020-11022, CVE-2020-11023, XSS via htmlPrefilter). Aanvaard als baseline; wordt in een latere opdracht vervangen of opgewaardeerd. De WAF (OWASP CRS) vangt reflected XSS in tussentijd deels af."
+  },
+  {
+    "component": "bootstrap",
+    "version": "4.1.3",
+    "justification": "Bewuste zwakke lib van de starter (CVE-2019-8331, XSS in data-attributen). Aanvaard als baseline; de app gebruikt de kwetsbare tooltip/popover-data-attributen niet. Wordt later opgewaardeerd."
+  }
+]

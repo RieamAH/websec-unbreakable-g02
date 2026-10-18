@@ -1,0 +1,19 @@
+# Gitleaks-config voor Unbreakable (opdracht 2).
+# We bouwen verder op de standaardregels van gitleaks.
+[extend]
+useDefault = true
+
+# Aanvaarde baseline: de nep-API-key die bewust in de starter-app zit
+# (app/appsettings.json -> Notifications:ApiKey, "ubk_live_..."). Het is een
+# placeholder zonder echte waarde; de echte secret komt later in een secrets
+# manager (opdracht 6). We negeren net die ene waarde via een allowlist op regex,
+# zodat een NIEUWE, andere secret in hetzelfde bestand WEL nog opgemerkt wordt.
+#
+# We gebruiken een regex-allowlist i.p.v. een fingerprint in .gitleaksignore,
+# omdat een repo die met "Use this template" is aangemaakt een andere commit-SHA
+# krijgt en een op de SHA gebaseerde fingerprint dan niet meer zou matchen.
+[[allowlist]]
+description = "Bewuste placeholder-API-key van de starter-app (opdracht 6 verplaatst hem naar een secrets manager)"
+regexes = [
+  '''ubk_live_7Hq2Lx9Vt4Rm8Pz3Wc6Ny1Bf5Kd0Js''',
+]

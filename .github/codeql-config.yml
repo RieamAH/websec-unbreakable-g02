@@ -1,0 +1,9 @@
+name: "CodeQL config Unbreakable"
+
+# De gevendorde bibliotheken (jQuery, Bootstrap) zijn SCA-werk, geen eigen code.
+# We scannen ze wel, maar de XSS-regels erop staan als baseline aanvaard.
+# Hier houden we de SAST gefocust op onze eigen code; de libs pakt Trivy/SCA op.
+paths:
+  - app
+paths-ignore:
+  - app/wwwroot/lib

@@ -1,0 +1,160 @@
+name: pipeline
+
+# Opdracht 2 - Cyber Security Advanced
+# Scannen (SCA, SAST, secret scanning) -> uitrollen achter de WAF.
+# Een nieuwe kritieke bevinding laat de pipeline falen. De baseline van de
+# ongewijzigde app staat in .gitleaksignore, .trivyignore en security/codeql-baseline.json.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Minimale rechten (DSOMM: minimale privileges voor het GITHUB_TOKEN).
+# Jobs die meer nodig hebben, vragen het expliciet aan.
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------- secret scanning
+  # DSOMM: Development and Source Control > "Block pushes containing secrets" (L3).
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (volledige historiek voor gitleaks)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Gitleaks
+        # Vastgepind op een commit SHA i.p.v. een tag (zie tj-actions, maart 2025).
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
+          # De aanvaarde baseline (de nep-API-key in appsettings.json) staat in
+          # .gitleaksignore. Een nieuwe, niet-genegeerde secret laat deze stap falen.
+
+  # ---------------------------------------------------------------- SCA
+  # DSOMM: Static depth > "Software Composition Analysis (server side)" (L2)
+  #        + "Software Composition Analysis (client side)" (L3, jQuery/Bootstrap).
+  sca:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Trivy filesystem scan (server-side .NET dependencies)
+        # LET OP: trivy-action werd in maart 2026 gekaapt (bijna alle tags herschreven).
+        # Daarom pinnen we op een SHA en gebruiken we trivy v0.75.0 (na het incident).
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,misconfig
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'          # een nieuwe HIGH/CRITICAL met fix laat de job falen
+          format: table
+        env:
+          TRIVY_VERSION: v0.75.0
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '22'
+      - name: retire.js (client-side libraries, jQuery/Bootstrap)
+        # Trivy ziet gevendorde JS zonder lockfile niet; retire.js wel.
+        # De gekende CVE's van de starter (jQuery 3.3.1, Bootstrap 4.1.3) staan
+        # aanvaard in .retireignore.json. Een nieuwe lib-CVE laat deze stap falen.
+        run: npx -y retire@5.7.0 --path app/wwwroot --severity high --ignorefile .retireignore.json
+
+  # ---------------------------------------------------------------- SAST (C#)
+  # DSOMM: Static depth > "Static analysis for important server side components" (L3).
+  sast-csharp:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # enkel om de bevindingen ook in het Security-tabblad te tonen
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+      - name: Init CodeQL
+        uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        with:
+          languages: csharp
+          queries: security-extended
+          config-file: ./.github/codeql-config.yml
+      - name: Build
+        run: dotnet build app/Unbreakable.csproj -c Release
+      - name: Analyze
+        uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        with:
+          output: sarif-results
+          upload: always
+      - name: Gate op nieuwe kritieke bevindingen
+        # Het Security-tabblad laat de pipeline NIET falen. Daarom vergelijken we
+        # de SARIF zelf met de aanvaarde baseline en falen we op iets nieuws.
+        run: python3 .github/scripts/gate.py sarif-results/csharp.sarif security/codeql-baseline.json
+
+  # ---------------------------------------------------------------- SAST (JS)
+  # DSOMM: Static depth > "Static analysis for important client side components" (L3).
+  sast-js:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Init CodeQL
+        uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        with:
+          languages: javascript
+          queries: security-extended
+          config-file: ./.github/codeql-config.yml
+      - name: Analyze
+        uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        with:
+          output: sarif-results
+          upload: always
+      - name: Gate op nieuwe kritieke bevindingen
+        run: python3 .github/scripts/gate.py sarif-results/javascript.sarif security/codeql-baseline.json
+
+  # ---------------------------------------------------------------- uitrollen
+  # DSOMM: Deployment > "Automated deployment process" (L1).
+  # Draait op de self-hosted runner OP de machine zelf: GitHub raakt niet bij een
+  # machine met enkel IPv6, dus de runner haalt de job zelf op (uitgaand IPv6).
+  # Enkel een push naar main rolt uit, nooit een pull request van buiten.
+  deploy:
+    needs: [secrets, sca, sast-csharp, sast-js]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: [self-hosted, unbreakable]
+    # Het environment "production" is in GitHub beperkt tot de branch main en
+    # bevat de environment-secret DB_PASSWORD. Door het hier te declareren krijgt
+    # deze job die secret EN houdt GitHub zelf tegen dat een andere branch uitrolt
+    # (tweede slot naast de if: hierboven - defense in depth).
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Schrijf .env uit GitHub Secrets
+        # De runtime-geheimen staan in GitHub Secrets, niet in de repo.
+        # (In opdracht 6 verhuizen ze naar OpenBao.)
+        run: |
+          cat > .env <<EOF
+          DOMAIN=${{ secrets.DOMAIN }}
+          LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          EOF
+      - name: Deploy achter BunkerWeb
+        run: |
+          # De app en databank krijgen geen poorten naar buiten; enkel BunkerWeb staat open.
+          docker compose pull
+          docker compose up -d --build
+          docker compose ps
+      - name: Opruimen
+        if: always()
+        run: rm -f .env

@@ -1,23 +1,92 @@
+# Unbreakable - eindtoestand na opdracht 2: app en databank staan NIET meer
+# open naar buiten. Enkel BunkerWeb (de WAF) publiceert poort 80 en 443.
+#
+# Tijdens stap 1-4 draaide de app nog met "ports: 8080:8080" zodat je ze kon
+# testen. Zodra de WAF erbij komt, verdwijnt die publicatie (zie het verslag).
+
 services:
+  # ------------------------------------------------------------- de WAF
+  bunkerweb:
+    image: bunkerity/bunkerweb-all-in-one:1.6.15
+    # Enige dienst die naar buiten luistert.
+    ports:
+      - "80:8080/tcp"
+      - "443:8443/tcp"
+      - "443:8443/udp"   # QUIC / HTTP3
+    volumes:
+      - bw-storage:/data  # bewaart o.a. het Let's Encrypt-certificaat (zie tip)
+    environment:
+      API_WHITELIST_IP: "127.0.0.0/8"
+      SERVICE_UI: "no"
+
+      # Eén site, die achter de WAF naar de app proxyt.
+      SERVER_NAME: "${DOMAIN}"
+      USE_REVERSE_PROXY: "yes"
+      REVERSE_PROXY_HOST: "http://app:8080"
+      REVERSE_PROXY_URL: "/"
+
+      # HTTPS via Let's Encrypt. Test EERST met staging (gedeelde rate limit!),
+      # zet daarna USE_LETS_ENCRYPT_STAGING op "no" voor een geldig certificaat.
+      AUTO_LETS_ENCRYPT: "yes"
+      USE_LETS_ENCRYPT_STAGING: "yes"
+      EMAIL_LETS_ENCRYPT: "${LETSENCRYPT_EMAIL}"
+      LETS_ENCRYPT_CHALLENGE: "http"
+      REDIRECT_HTTP_TO_HTTPS: "yes"
+
+      # OWASP Core Rule Set + ModSecurity (standaard aan, hier expliciet).
+      USE_MODSECURITY: "yes"
+      USE_MODSECURITY_CRS: "yes"
+      MODSECURITY_CRS_VERSION: "4"
+      MODSECURITY_SEC_RULE_ENGINE: "On"
+
+      # Rate limiting en slechte-bot-detectie tegen DoS/brute force (dreiging T8/T9).
+      USE_LIMIT_REQ: "yes"
+      LIMIT_REQ_RATE: "10r/s"
+      USE_BAD_BEHAVIOR: "yes"
+
+      # De app heeft (nog) geen schrijfacties nodig buiten GET/POST/DELETE.
+      ALLOWED_METHODS: "GET|POST|HEAD|DELETE"
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - bw-services
+
+  # ------------------------------------------------------------- de app
   app:
     build: ./app
-    ports:
-      - "8080:8080"
+    # GEEN ports meer: enkel bereikbaar via de WAF op het interne netwerk.
+    expose:
+      - "8080"
     environment:
-      ConnectionStrings__Unbreakable: "Host=db;Port=5432;Database=unbreakable;Username=unbreakable;Password=Unbr3akable!2026"
+      ConnectionStrings__Unbreakable: "Host=db;Port=5432;Database=unbreakable;Username=unbreakable;Password=${DB_PASSWORD}"
     depends_on:
       - db
     restart: unless-stopped
+    networks:
+      - bw-services
+      - internal
 
+  # ------------------------------------------------------------- de databank
   db:
     image: postgres:17
     environment:
       POSTGRES_DB: unbreakable
       POSTGRES_USER: unbreakable
-      POSTGRES_PASSWORD: Unbr3akable!2026
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - dbdata:/var/lib/postgresql/data
     restart: unless-stopped
+    networks:
+      - internal   # enkel intern, nooit naar buiten of naar de WAF
 
 volumes:
   dbdata:
+  bw-storage:
+
+networks:
+  # Het netwerk waarop BunkerWeb de app bereikt.
+  bw-services:
+    name: bw-services
+  # Afgeschermd netwerk tussen app en databank.
+  internal:
