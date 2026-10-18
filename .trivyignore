@@ -1,10 +1,17 @@
-# Aanvaarde SCA-baseline (server-side) op de ongewijzigde starter-app.
-# Trivy faalt de pipeline op een NIEUWE HIGH/CRITICAL met beschikbare fix.
+# Aanvaarde baseline op de ongewijzigde starter-app.
+# Trivy faalt de pipeline op een NIEUWE HIGH/CRITICAL (met fix) of misconfig.
 #
-# CONTROLEER na je eerste run of dit de CVE is die Trivy rapporteert, en vul aan.
-#
-# Newtonsoft.Json 12.0.1 (app/Unbreakable.csproj): bekende DoS bij diep
-# genest JSON. Reden om nu te aanvaarden: de API serialiseert enkel eigen
-# objecten, geen onvertrouwde JSON van buiten, dus de impact is beperkt.
+# --- SCA (dependencies) ---
+# Newtonsoft.Json 12.0.1 (app/Unbreakable.csproj): bekende DoS bij diep genest
+# JSON. Reden om nu te aanvaarden: de API serialiseert enkel eigen objecten,
+# geen onvertrouwde JSON van buiten, dus de impact is beperkt.
 # Alternatief (aangeraden, 1 regel): bump naar Newtonsoft.Json 13.0.3.
+# Beide id's staan er, want Trivy kan de CVE of de GHSA rapporteren.
 CVE-2024-21907
+GHSA-5crp-9r3c-p9vr
+
+# --- Misconfig (Dockerfile) ---
+# De Dockerfile van de starter draait als root (geen USER). Aanvaard nu;
+# non-root container hoort bij infrastructuur-hardening in een latere opdracht.
+# Een NIEUWE HIGH/CRITICAL misconfig laat de pipeline wel falen.
+AVD-DS-0002

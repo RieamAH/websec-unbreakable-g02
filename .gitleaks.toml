@@ -12,7 +12,7 @@ useDefault = true
 # We gebruiken een regex-allowlist i.p.v. een fingerprint in .gitleaksignore,
 # omdat een repo die met "Use this template" is aangemaakt een andere commit-SHA
 # krijgt en een op de SHA gebaseerde fingerprint dan niet meer zou matchen.
-[[allowlist]]
+[allowlist]
 description = "Bewuste placeholder-API-key van de starter-app (opdracht 6 verplaatst hem naar een secrets manager)"
 regexes = [
   '''ubk_live_7Hq2Lx9Vt4Rm8Pz3Wc6Ny1Bf5Kd0Js''',
