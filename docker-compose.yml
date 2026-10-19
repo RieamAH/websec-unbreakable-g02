@@ -28,7 +28,7 @@ services:
       # HTTPS via Let's Encrypt. Test EERST met staging (gedeelde rate limit!),
       # zet daarna USE_LETS_ENCRYPT_STAGING op "no" voor een geldig certificaat.
       AUTO_LETS_ENCRYPT: "yes"
-      USE_LETS_ENCRYPT_STAGING: "yes"
+      USE_LETS_ENCRYPT_STAGING: "no"
       EMAIL_LETS_ENCRYPT: "${LETSENCRYPT_EMAIL}"
       LETS_ENCRYPT_CHALLENGE: "http"
       REDIRECT_HTTP_TO_HTTPS: "yes"
