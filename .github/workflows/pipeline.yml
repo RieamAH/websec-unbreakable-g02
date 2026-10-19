@@ -35,6 +35,7 @@ jobs:
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITLEAKS_CONFIG: .gitleaks.toml
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # De aanvaarde baseline (de nep-API-key in appsettings.json) staat in
           # .gitleaksignore. Een nieuwe, niet-genegeerde secret laat deze stap falen.
 
