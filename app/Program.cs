@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Unbreakable.Data;
@@ -13,7 +14,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Databank aanmaken en vullen met voorbeeldberichten.
+// Databank aanmaken. Er komen geen voorbeeldberichten meer in: die stonden als
+// leesbare tekst in de databank (opdracht 3: de databank bevat enkel ciphertext).
 // De databank kan iets later opstarten dan de app, dus we proberen een paar keer.
 using (var scope = app.Services.CreateScope())
 {
@@ -25,7 +27,6 @@ using (var scope = app.Services.CreateScope())
         try
         {
             context.Database.EnsureCreated();
-            SeedData.Initialize(context);
             break;
         }
         catch (Exception ex) when (attempt < 30)
@@ -74,21 +75,10 @@ api.MapGet("/messages", async (HttpRequest request, UnbreakableContext db) =>
     return Results.Ok(await inbox.OrderByDescending(m => m.SentAt).ToListAsync());
 });
 
-api.MapGet("/messages/search", async (HttpRequest request, UnbreakableContext db) =>
-{
-    var user = CurrentUser(request);
-    if (string.IsNullOrEmpty(user))
-    {
-        return Results.Unauthorized();
-    }
-
-    var q = request.Query["q"].ToString();
-    var sql = "SELECT * FROM \"Messages\" WHERE \"Recipient\" = '" + user + "' " +
-              "AND (\"Subject\" ILIKE '%" + q + "%' OR \"Body\" ILIKE '%" + q + "%')";
-
-    var messages = await db.Messages.FromSqlRaw(sql).OrderByDescending(m => m.SentAt).ToListAsync();
-    return Results.Ok(messages);
-});
+// Het zoek-endpoint is verwijderd (opdracht 3). Zoeken op ciphertext heeft geen
+// zin, en het endpoint bouwde de SQL-query met stringconcatenatie (SQL-injectie,
+// CodeQL cs/sql-injection). Alle overblijvende queries gaan via LINQ en zijn dus
+// geparametriseerd.
 
 api.MapGet("/messages/export", async (HttpRequest request, UnbreakableContext db) =>
 {
@@ -122,6 +112,29 @@ api.MapPost("/messages", async (Message message, HttpRequest request, Unbreakabl
 
     message.Id = 0;
     message.SentAt = DateTime.UtcNow;
+
+    // Minimal APIs controleren de DataAnnotations niet vanzelf. We doen het hier
+    // expliciet: de server aanvaardt enkel ciphertext (A-Z, 0-9, _), een lijnnummer
+    // en een MAC in hex. Leesbare tekst met andere tekens wordt geweigerd.
+    var errors = new List<ValidationResult>();
+    if (!Validator.TryValidateObject(message, new ValidationContext(message), errors, validateAllProperties: true))
+    {
+        return Results.ValidationProblem(errors
+            .GroupBy(e => e.MemberNames.FirstOrDefault() ?? "")
+            .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage ?? "").ToArray()));
+    }
+
+    // Een codeboeklijn mag maar een keer gebruikt worden. Twee berichten met
+    // dezelfde lijn tussen dezelfde twee personen zijn te kraken (C1 - C2 = P1 - P2).
+    // De browser kent het codeboek niet, dus dit is een vangnet aan de serverkant.
+    var lineUsed = await db.Messages.AnyAsync(m =>
+        m.KeyLine == message.KeyLine &&
+        ((m.Sender == message.Sender && m.Recipient == message.Recipient) ||
+         (m.Sender == message.Recipient && m.Recipient == message.Sender)));
+    if (lineUsed)
+    {
+        return Results.Conflict(new { error = $"Lijn {message.KeyLine} van het codeboek is al gebruikt. Gebruik een nieuwe lijn." });
+    }
 
     db.Messages.Add(message);
     await db.SaveChangesAsync();
