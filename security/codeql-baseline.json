@@ -6,10 +6,10 @@
     "Een kritieke bevinding die hier NIET in staat, laat de pipeline falen.",
     "Formaat van een fingerprint: <ruleId>@<pad>:<regel>.",
     "BELANGRIJK: controleer deze lijst na je eerste echte pipeline-run. De exacte",
-    "regelnummers die CodeQL rapporteert moeten overeenkomen; pas ze aan indien nodig."
+    "regelnummers die CodeQL rapporteert moeten overeenkomen; pas ze aan indien nodig.",
+    "Opdracht 3: beide bevindingen zijn opgelost en uit de baseline gehaald.",
+    "cs/sql-injection: het zoek-endpoint met stringconcatenatie is verwijderd.",
+    "js/xss: de jQuery .html() met ?q= is verwijderd; alle serverdata gaat via escapeHtml/textContent."
   ],
-  "accepted": [
-    "cs/sql-injection@app/Program.cs:89",
-    "js/xss@app/wwwroot/js/app.js:101"
-  ]
+  "accepted": []
 }

@@ -42,7 +42,10 @@ services:
       # Rate limiting en slechte-bot-detectie tegen DoS/brute force (dreiging T8/T9).
       USE_LIMIT_REQ: "yes"
       LIMIT_REQ_RATE: "10r/s"
-      USE_BAD_BEHAVIOR: "yes"
+      # Tijdelijk uit: BunkerWeb ziet alle bezoekers als de Docker-gateway
+      # (172.18.0.1), dus een ban treft iedereen (P10). Weer aan zodra het echte
+      # client-IP doorkomt (IPv6 op het Docker-netwerk).
+      USE_BAD_BEHAVIOR: "no"
 
       # De app heeft (nog) geen schrijfacties nodig buiten GET/POST/DELETE.
       ALLOWED_METHODS: "GET|POST|HEAD|DELETE"
@@ -75,13 +78,17 @@ services:
       POSTGRES_USER: unbreakable
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - dbdata:/var/lib/postgresql/data
+      # Opdracht 3: nieuw volume. Het model is gewijzigd (geen onderwerp meer,
+      # ciphertext + lijnnummer + MAC) en EnsureCreated past een bestaande tabel
+      # niet aan. Het oude volume bevat nog leesbare berichten: na de uitrol
+      # verwijderen (docker volume rm websec-unbreakable-g02_dbdata).
+      - dbdata_o3:/var/lib/postgresql/data
     restart: unless-stopped
     networks:
       - internal   # enkel intern, nooit naar buiten of naar de WAF
 
 volumes:
-  dbdata:
+  dbdata_o3:
   bw-storage:
 
 networks:

@@ -21,7 +21,15 @@ async function call(method, path, body) {
 
     const response = await fetch('/api' + path, options);
     if (!response.ok) {
-        throw new Error(`${method} ${path} gaf ${response.status}`);
+        // Toon de reden die de server meegeeft (bv. lijn al gebruikt, ongeldige ciphertext).
+        let reason = '';
+        try {
+            const problem = await response.json();
+            reason = problem.error || Object.values(problem.errors || {}).flat().join(' ') || '';
+        } catch {
+            // geen JSON in het antwoord
+        }
+        throw new Error(reason || `${method} ${path} gaf ${response.status}`);
     }
 
     const type = response.headers.get('Content-Type') || '';
@@ -31,7 +39,6 @@ async function call(method, path, body) {
 export const api = {
     users: () => call('GET', '/users'),
     inbox: (from) => call('GET', '/messages' + (from ? '?from=' + encodeURIComponent(from) : '')),
-    search: (q) => call('GET', '/messages/search?q=' + encodeURIComponent(q)),
     message: (id) => call('GET', '/messages/' + id),
     send: (message) => call('POST', '/messages', message),
     remove: (id) => call('DELETE', '/messages/' + id),
