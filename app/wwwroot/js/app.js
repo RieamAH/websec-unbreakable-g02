@@ -1,7 +1,6 @@
 // De schermen van Unbreakable. Navigeren gebeurt met het deel na # in de URL.
 
-import { api } from './api.js';
-import { handleRedirect, login, logout, username as currentUser } from './auth.js';
+import { api, currentUser, setUser } from './api.js';
 import { normalize, parseKeyLine, encrypt, decrypt, sign, verify } from './crypto.js';
 
 const app = document.getElementById('app');
@@ -22,20 +21,13 @@ function formatDate(value) {
 }
 
 function showWho() {
-    const who = document.getElementById('who');
     const user = currentUser();
-    if (!user) {
-        who.innerHTML = '';
-        return;
-    }
-    who.innerHTML = `Je bent <strong>${escapeHtml(user)}</strong> (<a href="#" id="logout">uitloggen</a>)`;
-    document.getElementById('logout').addEventListener('click', (event) => {
-        event.preventDefault();
-        logout();
-    });
+    document.getElementById('who').innerHTML = user
+        ? `Je bent <strong>${escapeHtml(user)}</strong> (<a href="#/">wisselen</a>)`
+        : '';
 }
 
-// ------------------------------------------------------------------ inloggen
+// ------------------------------------------------------------------ naam kiezen
 
 function renderLogin() {
     const user = currentUser();
@@ -45,18 +37,26 @@ function renderLogin() {
             <p class="lead">Berichten die niemand anders kan lezen. Dat is toch de bedoeling.</p>
         </div>
         <div class="row justify-content-center">
-            <div class="col-md-5 text-center">
-                ${user
-                    ? `<p>Je bent ingelogd als <strong>${escapeHtml(user)}</strong>.</p>
-                       <a href="#/inbox" class="btn btn-primary">Naar je inbox</a>`
-                    : `<p>Je logt in bij onze identity provider (Keycloak). De app ziet nooit je wachtwoord.</p>
-                       <button id="login" class="btn btn-primary">Inloggen</button>`}
+            <div class="col-md-5">
+                ${user ? `<p>Je gebruikt Unbreakable als <strong>${escapeHtml(user)}</strong>.
+                          <a href="#/inbox">Naar je inbox</a></p>
+                          <p>Iemand anders? Vul hieronder een andere naam in.</p>` : ''}
+                <form id="login">
+                    <div class="form-group">
+                        <label for="name">Wie ben je?</label>
+                        <input id="name" class="form-control" placeholder="bijvoorbeeld Anna"
+                               required minlength="2" maxlength="40" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Verder</button>
+                </form>
             </div>
         </div>`;
 
-    if (!user) {
-        document.getElementById('login').addEventListener('click', () => login('#/inbox'));
-    }
+    document.getElementById('login').addEventListener('submit', (event) => {
+        event.preventDefault();
+        setUser(document.getElementById('name').value.trim());
+        location.hash = '#/inbox';
+    });
 }
 
 // ------------------------------------------------------------------ inbox
@@ -166,9 +166,9 @@ async function renderMessage(id) {
         <div id="result" class="mt-3"></div>
         <div class="card mb-3 d-none" id="plain-card"><div class="card-body message-body" id="plain"></div></div>
         <p>
+            <button id="delete" class="btn btn-outline-danger">Verwijderen</button>
             <a href="#/inbox" class="btn btn-link">Terug naar je inbox</a>
-        </p>
-        <p class="text-muted small">Verwijderen kan enkel de afzender (via Verzonden).</p>`;
+        </p>`;
 
     document.getElementById('cipher').textContent = m.body;
     document.getElementById('mac').textContent = m.mac;
@@ -202,45 +202,12 @@ async function renderMessage(id) {
             showAlert(result, 'warning', error.message);
         }
     });
-}
 
-// ------------------------------------------------------------------ verzonden
-
-async function renderSent() {
-    // Enkel metadata: de API geeft de afzender geen ciphertext of MAC terug.
-    const sent = await api.sent();
-
-    const rows = sent.map(m => `
-        <tr>
-            <td>${escapeHtml(m.recipient)}</td>
-            <td>Lijn ${Number(m.keyLine)} &middot; ${Number(m.length)} tekens</td>
-            <td>${formatDate(m.sentAt)}</td>
-            <td><button class="btn btn-sm btn-outline-danger" data-id="${Number(m.id)}">Verwijderen</button></td>
-        </tr>`).join('');
-
-    app.innerHTML = `
-        <h1>Verzonden</h1>
-        <p class="text-muted">Je kan je eigen berichten verwijderen, maar niet meer lezen: lezen kan enkel de ontvanger.</p>
-        <div id="error"></div>
-        ${sent.length
-            ? `<table class="table">
-                   <thead><tr><th>Aan</th><th>Codeboek</th><th>Verzonden</th><th></th></tr></thead>
-                   <tbody>${rows}</tbody>
-               </table>`
-            : '<p class="text-muted">Nog geen verzonden berichten.</p>'}`;
-
-    app.querySelectorAll('button[data-id]').forEach(button => {
-        button.addEventListener('click', async () => {
-            if (!confirm('Ben je zeker dat je dit bericht wil verwijderen?')) {
-                return;
-            }
-            try {
-                await api.remove(Number(button.dataset.id));
-                await renderSent();
-            } catch (e) {
-                showAlert(document.getElementById('error'), 'danger', e.message);
-            }
-        });
+    document.getElementById('delete').addEventListener('click', async () => {
+        if (confirm('Ben je zeker dat je dit bericht wil verwijderen?')) {
+            await api.remove(id);
+            location.hash = '#/inbox';
+        }
     });
 }
 
@@ -354,17 +321,15 @@ async function route() {
         if (path === '/over') {
             return renderAbout();
         }
-        // Geen "ben je ingelogd?"-check hier: in de browser is dat geen beveiliging
-        // (CodeQL js/user-controlled-bypass). De API is de poort: zonder geldig
-        // token start api.js zelf de login bij Keycloak.
+        if (!currentUser()) {
+            location.hash = '#/';
+            return;
+        }
         if (path === '/inbox') {
             return await renderInbox(params);
         }
         if (path === '/nieuw') {
             return await renderNew();
-        }
-        if (path === '/verzonden') {
-            return await renderSent();
         }
         const match = path.match(/^\/bericht\/(\d+)$/);
         if (match) {
@@ -376,16 +341,5 @@ async function route() {
     }
 }
 
-async function start() {
-    try {
-        // Terug van Keycloak? Dan eerst de code inruilen voor tokens.
-        await handleRedirect();
-    } catch (error) {
-        app.innerHTML = `<div class="alert alert-danger">${escapeHtml(error.message)}</div>`;
-        return;
-    }
-    window.addEventListener('hashchange', route);
-    await route();
-}
-
-start();
+window.addEventListener('hashchange', route);
+route();
