@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1820" height="1080" viewBox="0 0 1820 1080" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker></defs>
+<rect width="1820" height="1080" fill="white"/>
+<text x="20" y="28" font-size="20" font-weight="bold">DFD opdracht 4 - identity provider en PDP (nieuwe dreigingen A1-A12)</text>
+<rect x="20" y="60" width="360" height="560" fill="none" stroke="#c0392b" stroke-width="2" stroke-dasharray="10 6" rx="6"/>
+<text x="28" y="78" font-size="13" fill="#c0392b">Toestel gebruiker (browser)</text>
+<rect x="20" y="860" width="360" height="180" fill="none" stroke="#c0392b" stroke-width="2" stroke-dasharray="10 6" rx="6"/>
+<text x="28" y="878" font-size="13" fill="#c0392b">Laptop beheerder</text>
+<rect x="420" y="40" width="1150" height="1000" fill="none" stroke="#c0392b" stroke-width="2" stroke-dasharray="10 6" rx="6"/>
+<text x="428" y="58" font-size="13" fill="#c0392b">Machine g02 (Docker, enkel IPv6)</text>
+<rect x="680" y="70" width="870" height="950" fill="none" stroke="#c0392b" stroke-width="2" stroke-dasharray="10 6" rx="6"/>
+<text x="688" y="88" font-size="13" fill="#c0392b">Docker-netwerken (niet publiek)</text>
+<rect x="1600" y="520" width="200" height="220" fill="none" stroke="#c0392b" stroke-width="2" stroke-dasharray="10 6" rx="6"/>
+<text x="1608" y="538" font-size="13" fill="#c0392b">GitHub</text>
+<line x1="199" y1="150" x2="196" y2="250" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="164" y="190" width="68" height="20" fill="white" fill-opacity="0.92"/>
+<text x="197.67441860465118" y="204.025" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F1 invoer</text>
+<line x1="195" y1="470" x2="195" y2="334" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="126" y="392" width="138" height="20" fill="white" fill-opacity="0.92"/>
+<text x="195.0" y="406.025" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F12 sleutels intypen</text>
+<line x1="290" y1="305" x2="460" y2="329" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="316" y="279" width="119" height="76" fill="white" fill-opacity="0.92"/>
+<text x="375.0" y="293.42499999999995" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">HTTPS</text>
+<text x="375.0" y="307.22499999999997" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F13 login</text>
+<text x="375.0" y="321.025" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F15 code+verifier</text>
+<text x="375.0" y="334.82499999999993" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">→ tokens</text>
+<text x="375.0" y="348.62499999999994" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F16 API + Bearer</text>
+<line x1="650" y1="301" x2="760" y2="253" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="646" y="260" width="119" height="34" fill="white" fill-opacity="0.92"/>
+<text x="705.0" y="274.125" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F16 /api + Bearer</text>
+<text x="705.0" y="287.925" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">(http intern)</text>
+<line x1="603" y1="384" x2="807" y2="560" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="607" y="455" width="196" height="34" fill="white" fill-opacity="0.92"/>
+<text x="705.0" y="469.125" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F13/F15 enkel /auth/realms/</text>
+<text x="705.0" y="482.925" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">unbreakable + /auth/resources</text>
+<line x1="855" y1="254" x2="855" y2="560" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="799" y="390" width="112" height="34" fill="white" fill-opacity="0.92"/>
+<text x="855.0" y="404.125" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F17 JWKS ophalen</text>
+<text x="855.0" y="417.925" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">(http intern)</text>
+<line x1="944" y1="254" x2="1106" y2="330" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="930" y="275" width="189" height="34" fill="white" fill-opacity="0.92"/>
+<text x="1025.0" y="289.125" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F18 Check, ListObjects,</text>
+<text x="1025.0" y="302.925" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">Write tuples (preshared key)</text>
+<line x1="950" y1="189" x2="1100" y2="151" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="959" y="160" width="132" height="20" fill="white" fill-opacity="0.92"/>
+<text x="1025.0" y="174.025" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F5 SQL (wachtwoord)</text>
+<line x1="1273" y1="330" x2="1393" y2="266" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="1306" y="288" width="55" height="20" fill="white" fill-opacity="0.92"/>
+<text x="1333.0597014925374" y="302.025" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F19 SQL</text>
+<line x1="855" y1="644" x2="855" y2="820" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="828" y="722" width="55" height="20" fill="white" fill-opacity="0.92"/>
+<text x="855.0" y="736.025" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F20 SQL</text>
+<line x1="1195" y1="560" x2="1195" y2="414" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="1136" y="470" width="119" height="34" fill="white" fill-opacity="0.92"/>
+<text x="1195.0" y="484.125" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F21 store + model</text>
+<text x="1195.0" y="497.925" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">(preshared key)</text>
+<line x1="1620" y1="626" x2="1290" y2="607" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="1392" y="599" width="125" height="34" fill="white" fill-opacity="0.92"/>
+<text x="1455.0" y="613.5408415841584" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F22 model.json via</text>
+<text x="1455.0" y="627.3408415841584" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">self-hosted runner</text>
+<line x1="256" y1="920" x2="776" y2="644" stroke="#333" stroke-width="1.6" marker-end="url(#arr)"/>
+<rect x="409" y="765" width="215" height="34" fill="white" fill-opacity="0.92"/>
+<text x="516.2068965517242" y="779.125" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">F23 beheerconsole via SSH-tunnel</text>
+<text x="516.2068965517242" y="792.925" font-size="11.5" font-weight="normal" fill="#1a5276" text-anchor="middle">(127.0.0.1:8081)</text>
+<rect x="120" y="90" width="160" height="60" fill="#eef2f7" stroke="#2c3e50" stroke-width="2"/>
+<text x="200.0" y="124.55" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">Gebruiker</text>
+<ellipse cx="195.0" cy="292.0" rx="95.0" ry="42.0" fill="#e8f6ef" stroke="#1e8449" stroke-width="2"/>
+<text x="195.0" y="288.75" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">SPA (webclient)</text>
+<text x="195.0" y="304.35" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">crypto.js + auth.js</text>
+<rect x="100" y="470" width="190" height="56" fill="#fef9e7" stroke="none"/>
+<line x1="100" y1="470" x2="290" y2="470" stroke="#7d6608" stroke-width="2"/>
+<line x1="100" y1="526" x2="290" y2="526" stroke="#7d6608" stroke-width="2"/>
+<text x="195.0" y="494.75" font-size="13" font-weight="normal" fill="#000" text-anchor="middle">Codeboek + HMAC-sleutel</text>
+<text x="195.0" y="510.35" font-size="13" font-weight="normal" fill="#000" text-anchor="middle">(lokaal)</text>
+<rect x="120" y="920" width="160" height="60" fill="#eef2f7" stroke="#2c3e50" stroke-width="2"/>
+<text x="200.0" y="954.55" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">Beheerder</text>
+<ellipse cx="555.0" cy="342.0" rx="95.0" ry="42.0" fill="#e8f6ef" stroke="#1e8449" stroke-width="2"/>
+<text x="555.0" y="338.75" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">BunkerWeb (WAF)</text>
+<text x="555.0" y="354.35" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">TLS-einde</text>
+<ellipse cx="855.0" cy="212.0" rx="95.0" ry="42.0" fill="#e8f6ef" stroke="#1e8449" stroke-width="2"/>
+<text x="855.0" y="208.75" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">API (PEP)</text>
+<text x="855.0" y="224.35" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">ASP.NET, JWT-validatie</text>
+<ellipse cx="855.0" cy="602.0" rx="95.0" ry="42.0" fill="#e8f6ef" stroke="#1e8449" stroke-width="2"/>
+<text x="855.0" y="598.75" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">Keycloak (IdP)</text>
+<text x="855.0" y="614.35" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">realm unbreakable</text>
+<rect x="1100" y="100" width="190" height="56" fill="#fef9e7" stroke="none"/>
+<line x1="1100" y1="100" x2="1290" y2="100" stroke="#7d6608" stroke-width="2"/>
+<line x1="1100" y1="156" x2="1290" y2="156" stroke="#7d6608" stroke-width="2"/>
+<text x="1195.0" y="124.75" font-size="13" font-weight="normal" fill="#000" text-anchor="middle">PostgreSQL app</text>
+<text x="1195.0" y="140.35000000000002" font-size="13" font-weight="normal" fill="#000" text-anchor="middle">berichten + adresboek</text>
+<ellipse cx="1195.0" cy="372.0" rx="95.0" ry="42.0" fill="#e8f6ef" stroke="#1e8449" stroke-width="2"/>
+<text x="1195.0" y="368.75" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">OpenFGA (PDP)</text>
+<text x="1195.0" y="384.35" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">model + tuples</text>
+<rect x="1350" y="210" width="190" height="56" fill="#fef9e7" stroke="none"/>
+<line x1="1350" y1="210" x2="1540" y2="210" stroke="#7d6608" stroke-width="2"/>
+<line x1="1350" y1="266" x2="1540" y2="266" stroke="#7d6608" stroke-width="2"/>
+<text x="1445.0" y="234.75" font-size="13" font-weight="normal" fill="#000" text-anchor="middle">PostgreSQL OpenFGA</text>
+<text x="1445.0" y="250.35" font-size="13" font-weight="normal" fill="#000" text-anchor="middle">tuples, modelversies</text>
+<ellipse cx="1195.0" cy="602.0" rx="95.0" ry="42.0" fill="#e8f6ef" stroke="#1e8449" stroke-width="2"/>
+<text x="1195.0" y="598.75" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">fga-init (PAP)</text>
+<text x="1195.0" y="614.35" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">store + model</text>
+<rect x="760" y="820" width="190" height="56" fill="#fef9e7" stroke="none"/>
+<line x1="760" y1="820" x2="950" y2="820" stroke="#7d6608" stroke-width="2"/>
+<line x1="760" y1="876" x2="950" y2="876" stroke="#7d6608" stroke-width="2"/>
+<text x="855.0" y="844.75" font-size="13" font-weight="normal" fill="#000" text-anchor="middle">PostgreSQL Keycloak</text>
+<text x="855.0" y="860.35" font-size="13" font-weight="normal" fill="#000" text-anchor="middle">accounts, hashes, sessies</text>
+<rect x="1620" y="600" width="160" height="60" fill="#eef2f7" stroke="#2c3e50" stroke-width="2"/>
+<text x="1700.0" y="626.75" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">repo + Actions</text>
+<text x="1700.0" y="642.35" font-size="13" font-weight="bold" fill="#000" text-anchor="middle">authz/model.fga</text>
+<rect x="40" y="360" width="179" height="23" fill="#fdebd0" stroke="#e67e22" rx="4"/>
+<text x="47" y="376" font-size="12" fill="#a04000">A1 token-diefstal via XSS</text>
+<rect x="440" y="410" width="139" height="23" fill="#fdebd0" stroke="#e67e22" rx="4"/>
+<text x="447" y="426" font-size="12" fill="#a04000">A4 code onderschept</text>
+<rect x="975" y="196" width="186" height="38" fill="#fdebd0" stroke="#e67e22" rx="4"/>
+<text x="982" y="212" font-size="12" fill="#a04000">A2 vals token / alg</text>
+<text x="982" y="227" font-size="12" fill="#a04000">A3 token van andere client</text>
+<rect x="1310" y="85" width="139" height="23" fill="#fdebd0" stroke="#e67e22" rx="4"/>
+<text x="1317" y="101" font-size="12" fill="#a04000">A9 naam hergebruikt</text>
+<rect x="1310" y="430" width="212" height="38" fill="#fdebd0" stroke="#e67e22" rx="4"/>
+<text x="1317" y="446" font-size="12" fill="#a04000">A6 key → zelf tuples schrijven</text>
+<text x="1317" y="461" font-size="12" fill="#a04000">A8 PDP down → fail closed</text>
+<rect x="960" y="410" width="146" height="23" fill="#fdebd0" stroke="#e67e22" rx="4"/>
+<text x="967" y="426" font-size="12" fill="#a04000">A7 tuples ≠ databank</text>
+<rect x="470" y="640" width="166" height="53" fill="#fdebd0" stroke="#e67e22" rx="4"/>
+<text x="477" y="656" font-size="12" fill="#a04000">A5 beheerconsole/master</text>
+<text x="477" y="671" font-size="12" fill="#a04000">A10 open registratie</text>
+<text x="477" y="686" font-size="12" fill="#a04000">A12 CVE's Keycloak</text>
+<rect x="1590" y="760" width="219" height="23" fill="#fdebd0" stroke="#e67e22" rx="4"/>
+<text x="1597" y="776" font-size="12" fill="#a04000">A11 kwaadaardige modelwijziging</text>
+<text x="1600" y="60" font-size="13" font-weight="bold">Legende</text>
+<rect x="1600" y="72" width="40" height="22" fill="#eef2f7" stroke="#2c3e50" stroke-width="2"/><text x="1650" y="88" font-size="12">externe entiteit</text>
+<ellipse cx="1620" cy="116" rx="20" ry="11" fill="#e8f6ef" stroke="#1e8449" stroke-width="2"/><text x="1650" y="120" font-size="12">proces</text>
+<line x1="1600" y1="138" x2="1640" y2="138" stroke="#7d6608" stroke-width="2"/><line x1="1600" y1="156" x2="1640" y2="156" stroke="#7d6608" stroke-width="2"/><text x="1650" y="152" font-size="12">data store</text>
+<rect x="1600" y="168" width="40" height="22" fill="none" stroke="#c0392b" stroke-dasharray="6 4" stroke-width="2"/><text x="1650" y="184" font-size="12">vertrouwensgrens</text>
+<rect x="1600" y="202" width="40" height="22" fill="#fdebd0" stroke="#e67e22"/><text x="1650" y="218" font-size="12">dreiging</text>
+<text x="1600" y="250" font-size="11" fill="#555">Elementen van O1-O3 (pipeline,</text>
+<text x="1600" y="264" font-size="11" fill="#555">Let's Encrypt, AI-agent) blijven</text>
+<text x="1600" y="278" font-size="11" fill="#555">gelden, zie DFD opdracht 3.</text>
+</svg>

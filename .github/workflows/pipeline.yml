@@ -125,13 +125,28 @@ jobs:
       - name: Gate op nieuwe kritieke bevindingen
         run: python3 .github/scripts/gate.py sarif-results/javascript.sarif security/codeql-baseline.json
 
+  # ---------------------------------------------------------------- autorisatiemodel
+  # Opdracht 4: het autorisatiemodel (authz/model.fga) is code en wordt getest
+  # zoals code. Faalt een test (bv. de afzender kan plots lezen), dan rolt niets uit.
+  # DSOMM: Test and Verification > Application tests.
+  authz-model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: fga model test
+        # Officieel distroless image van de OpenFGA CLI, vastgepind op digest.
+        run: |
+          docker run --rm -v "$PWD/authz:/authz:ro" -w /authz \
+            openfga/cli:v0.9.0@sha256:7a7f9fb0a27a788a0fa7907eb5fc751c3134ca0776245578308e011606b61091 \
+            model test --tests model.fga.yaml
+
   # ---------------------------------------------------------------- uitrollen
   # DSOMM: Deployment > "Automated deployment process" (L1).
   # Draait op de self-hosted runner OP de machine zelf: GitHub raakt niet bij een
   # machine met enkel IPv6, dus de runner haalt de job zelf op (uitgaand IPv6).
   # Enkel een push naar main rolt uit, nooit een pull request van buiten.
   deploy:
-    needs: [secrets, sca, sast-csharp, sast-js]
+    needs: [secrets, sca, sast-csharp, sast-js, authz-model]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: [self-hosted, unbreakable]
     # Het environment "production" is in GitHub beperkt tot de branch main en
@@ -149,6 +164,10 @@ jobs:
           DOMAIN=${{ secrets.DOMAIN }}
           LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          KC_DB_PASSWORD=${{ secrets.KC_DB_PASSWORD }}
+          KC_ADMIN_PASSWORD=${{ secrets.KC_ADMIN_PASSWORD }}
+          FGA_DB_PASSWORD=${{ secrets.FGA_DB_PASSWORD }}
+          FGA_API_KEY=${{ secrets.FGA_API_KEY }}
           EOF
       - name: Deploy achter BunkerWeb
         run: |
@@ -156,6 +175,8 @@ jobs:
           docker compose pull
           docker compose up -d --build
           docker compose ps
+          # Uitvoer van de PAP: welke store en welk modelversie actief zijn.
+          docker compose logs fga-init
       - name: Opruimen
         if: always()
         run: rm -f .env

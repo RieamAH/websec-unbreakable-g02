@@ -11,4 +11,13 @@ public class UnbreakableContext : DbContext
     }
 
     public DbSet<Message> Messages { get; set; }
+
+    public DbSet<AppUser> Users { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Een gebruikersnaam hoort bij precies één account (Keycloak: "edit
+        // username" staat uit). Zo kan een bericht nooit bij twee mensen landen.
+        modelBuilder.Entity<AppUser>().HasIndex(u => u.Username).IsUnique();
+    }
 }
