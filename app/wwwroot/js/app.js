@@ -1,7 +1,7 @@
 // De schermen van Unbreakable. Navigeren gebeurt met het deel na # in de URL.
 
 import { api } from './api.js';
-import { handleRedirect, isLoggedIn, login, logout, username as currentUser } from './auth.js';
+import { handleRedirect, login, logout, username as currentUser } from './auth.js';
 import { normalize, parseKeyLine, encrypt, decrypt, sign, verify } from './crypto.js';
 
 const app = document.getElementById('app');
@@ -354,11 +354,9 @@ async function route() {
         if (path === '/over') {
             return renderAbout();
         }
-        if (!isLoggedIn()) {
-            // Keycloak onthoudt je sessie: na een herlaadbeurt gaat dit zonder wachtwoord.
-            await login(location.hash);
-            return;
-        }
+        // Geen "ben je ingelogd?"-check hier: in de browser is dat geen beveiliging
+        // (CodeQL js/user-controlled-bypass). De API is de poort: zonder geldig
+        // token start api.js zelf de login bij Keycloak.
         if (path === '/inbox') {
             return await renderInbox(params);
         }
