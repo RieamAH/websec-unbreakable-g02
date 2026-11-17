@@ -40,42 +40,22 @@ app/
 docs/threat-model.md        basis threat model van de starter app
 ```
 
-### De API (na opdracht 4)
+### De API
 
-Elk verzoek naar `/api` heeft een access token van Keycloak nodig (`Authorization: Bearer ...`).
-Wat je mag, beslist OpenFGA (model in `authz/model.fga`), niet de code van de API.
+| Methode | Pad | Doet |
+|---|---|---|
+| GET | `/health` | leeft de app? |
+| GET | `/api/users` | alle gekende namen |
+| GET | `/api/messages` | je inbox, optioneel `?from=<naam>` |
+| GET | `/api/messages/search?q=<tekst>` | zoeken in je inbox |
+| GET | `/api/messages/{id}` | één bericht |
+| POST | `/api/messages` | bericht versturen |
+| DELETE | `/api/messages/{id}` | bericht verwijderen |
+| GET | `/api/messages/export` | je inbox als JSON |
 
-| Methode | Pad | Doet | Vraag aan de PDP |
-|---|---|---|---|
-| GET | `/health` | leeft de app? | - |
-| GET | `/api/me` | wie ben ik volgens het token | - |
-| GET | `/api/users` | gekende gebruikersnamen (adresboek) | - |
-| GET | `/api/messages` | je inbox, optioneel `?from=<naam>` | ListObjects `can_read` |
-| GET | `/api/messages/sent` | metadata van je verzonden berichten | ListObjects `can_delete` |
-| GET | `/api/messages/export` | je inbox als JSON | ListObjects `can_read` |
-| GET | `/api/messages/{id}` | één bericht | Check `can_read` |
-| POST | `/api/messages` | bericht versturen | schrijft tuples `sender` + `recipient` |
-| DELETE | `/api/messages/{id}` | bericht verwijderen | Check `can_delete` |
+Wie je bent, stuurt de SPA mee in de header `X-User`.
 
-### Opdracht 4: identity provider en PDP
-
-```
-authz/model.fga         het autorisatiemodel (ReBAC), leesbaar
-authz/model.json        hetzelfde model in JSON (voor de API van OpenFGA)
-authz/model.fga.yaml    tests van het model (fga model test, ook in de pipeline)
-authz/init.sh           PAP: maakt store + model aan bij elke deploy (fga-init)
-keycloak/unbreakable-realm.json   realm, client unbreakable-spa (code flow + PKCE)
-docs/opdracht4-tests.md           testverzoeken met curl
-```
-
-Nieuwe geheimen (GitHub environment `production`): `KC_DB_PASSWORD`, `KC_ADMIN_PASSWORD`,
-`FGA_DB_PASSWORD`, `FGA_API_KEY`.
-
-Model aangepast in `model.fga`? Zet het om naar JSON met
-`fga model transform --file authz/model.fga > authz/model.json`.
-
-Beheerconsole van Keycloak (niet publiek): `ssh -L 8081:127.0.0.1:8081 g02`,
-daarna `http://localhost:8081/auth/admin/`.
+Technologie: ASP.NET Core minimal API op .NET 10, Entity Framework Core met PostgreSQL 17, en vanilla JavaScript met Bootstrap, zonder build stap.
 
 ## Herkomst
 
