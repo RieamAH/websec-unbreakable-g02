@@ -73,6 +73,7 @@ services:
   # ------------------------------------------------------------- de app (PEP)
   app:
     build: ./app
+    mem_limit: 384m
     expose:
       - "8080"
     environment:
@@ -104,6 +105,7 @@ services:
   # ------------------------------------------------------------- databank van de app
   db:
     image: postgres:17
+    mem_limit: 256m
     environment:
       POSTGRES_DB: unbreakable
       POSTGRES_USER: unbreakable
@@ -126,6 +128,9 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.8.2
     command: ["start", "--import-realm"]
+    # Geheugen begrenzen: zonder limiet neemt Java een groot deel van het RAM
+    # en kan de hele machine (ook SSH) vastlopen (A8/A12).
+    mem_limit: 768m
     environment:
       KC_DB: postgres
       KC_DB_URL: "jdbc:postgresql://kc-db:5432/keycloak"
@@ -142,6 +147,7 @@ services:
       # Beheerconsole enkel via een SSH-tunnel naar localhost:8081 (T13).
       KC_HOSTNAME_ADMIN: "http://localhost:8081/auth"
       KC_HEALTH_ENABLED: "true"
+      JAVA_OPTS_KC_HEAP: "-XX:MaxRAMPercentage=65 -XX:InitialRAMPercentage=10"
       # Eerste beheerder, enkel gebruikt bij de allereerste start.
       KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
@@ -163,6 +169,7 @@ services:
 
   kc-db:
     image: postgres:17
+    mem_limit: 256m
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
@@ -182,6 +189,7 @@ services:
   openfga:
     image: openfga/openfga:v1.22.1
     command: ["run"]
+    mem_limit: 256m
     environment:
       OPENFGA_DATASTORE_ENGINE: postgres
       OPENFGA_DATASTORE_URI: "postgres://openfga:${FGA_DB_PASSWORD}@fga-db:5432/openfga?sslmode=disable"
@@ -203,6 +211,7 @@ services:
   fga-migrate:
     image: openfga/openfga:v1.22.1
     command: ["migrate"]
+    mem_limit: 128m
     environment:
       OPENFGA_DATASTORE_ENGINE: postgres
       OPENFGA_DATASTORE_URI: "postgres://openfga:${FGA_DB_PASSWORD}@fga-db:5432/openfga?sslmode=disable"
@@ -217,6 +226,7 @@ services:
   # in OpenFGA. Het model komt dus uit git (review via PR, historiek, pipeline).
   fga-init:
     image: curlimages/curl:8.23.0
+    mem_limit: 32m
     entrypoint: ["/bin/sh", "/authz/init.sh"]
     environment:
       FGA_API_KEY: ${FGA_API_KEY}
@@ -231,6 +241,7 @@ services:
 
   fga-db:
     image: postgres:17
+    mem_limit: 256m
     environment:
       POSTGRES_DB: openfga
       POSTGRES_USER: openfga
